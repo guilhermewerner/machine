@@ -3,196 +3,196 @@
 #[repr(u8)]
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, TryFromPrimitive)]
 pub enum Instruction {
-    /// No operation.
+    /// **0x00** - No operation.
     ///
     /// ```no_run
     /// nop
     /// ```
     Nop = 0x00,
 
-    /// Load register from memory.
+    /// **0x01** - Load register from memory.
     ///
     /// ```no_run
     /// ldr r1 0050 // r1 = mem[0050]
     /// ```
     Ldr = 0x01,
 
-    /// Store register in memory.
+    /// **0x02** - Store register in memory.
     ///
     /// ```no_run
     /// str 0050 r1 // mem[0050] = r1
     /// ```
     Str = 0x02,
 
-    /// Move register.
+    /// **0x03** - Move register.
     ///
     /// ```no_run
     /// mov r1 r2 // r1 = r2
     /// ```
     Mov = 0x03,
 
-    /// Arithmetic addition `+`.
+    /// **0x04** - Arithmetic addition `+`.
     ///
     /// ```no_run
     /// add r1 r2 r3 // r1 = r2 + r3
     /// ```
     Add = 0x04,
 
-    /// Add with carry.
+    /// **0x05** - Add with carry.
     ///
     /// ```no_run
     /// adc r1 r2 r3 r4 // r1 = r2 + r3 + r4
     /// ```
-    Adc,
+    Adc = 0x05,
 
-    /// Arithmetic subtraction `-`.
+    /// **0x06** - Arithmetic subtraction `-`.
     ///
     /// ```no_run
     /// sub r1 r2 r3 // r1 = r2 - r3
     /// ```
-    Sub,
+    Sub = 0x06,
 
-    /// Subtract with carry.
+    /// **0x07** - Subtract with carry.
     ///
     /// ```no_run
     /// sbc r1 r2 r3 r4 // r1 = r2 - r3 - 1 - r4
     /// ```
-    Sbc,
+    Sbc = 0x07,
 
-    /// Arithmetic multiplication `*`.
+    /// **0x08** - Arithmetic multiplication `*`.
     ///
     /// ```no_run
     /// mul r1 r2 r3 // r1 = r2 * r3
     /// ```
-    Mul,
+    Mul = 0x08,
 
-    /// Arithmetic division `/`.
+    /// **0x09** - Arithmetic division `/`.
     ///
     /// ```no_run
     /// div r1 r2 r3 // r1 = r2 / r3
     /// ```
-    Div,
+    Div = 0x09,
 
-    /// Arithmetic remainder `/`.
+    /// **0x0A** - Arithmetic remainder `/`.
     ///
     /// ```no_run
     /// rem r1 r2 r3 // r1 = r2 % r3
     /// ```
-    Rem,
+    Rem = 0x0A,
 
-    /// Arithmetic negation `-`.
+    /// **0x0B** - Arithmetic negation `-`.
     ///
     /// ```no_run
     /// not r1 r2 // r1 = -r2
     /// ```
-    Neg,
+    Neg = 0x0B,
 
-    /// Bitwise AND `&`.
+    /// **0x0C** - Bitwise AND `&`.
     ///
     /// ```no_run
     /// and r1 r2 r3 // r1 = r2 & r3
     /// ```
-    And,
+    And = 0x0C,
 
-    /// Bitwise OR `|`.
+    /// **0x0D** - Bitwise OR `|`.
     ///
     /// ```no_run
     /// or r1 r2 r3 // r1 = r2 | r3
     /// ```
-    Or,
+    Or = 0x0D,
 
-    /// Bitwise XOR `^`.
+    /// **0x0E** - Bitwise XOR `^`.
     ///
     /// ```no_run
     /// xor r1 r2 r3 // r1 = r2 ^ r3
     /// ```
-    Xor,
+    Xor = 0x0E,
 
-    /// Logical negation `!`
+    /// **0x0F** - Logical negation `!`
     ///
     /// ```no_run
     /// not r1 r2 // r1 = !r2
     /// ```
-    Not,
+    Not = 0x0F,
 
-    /// Bitwise NAND.
+    /// **0x10** - Bitwise NAND.
     ///
     /// ```no_run
     /// nand r1 r2 r3 // r1 = !(r2 & r3)
     /// ```
-    Nand,
+    Nand = 0x10,
 
-    /// Bitwise NOR.
+    /// **0x11** - Bitwise NOR.
     ///
     /// ```no_run
     /// nor r1 r2 r3 // r1 = !(r2 | r3)
     /// ```
-    Nor,
+    Nor = 0x11,
 
-    /// Bitwise XNOR.
+    /// **0x12** - Bitwise XNOR.
     ///
     /// ```no_run
     /// xnor r1 r2 r3 // r1 = !(r2 ^ r3)
     /// ```
-    Xnor,
+    Xnor = 0x12,
 
-    /// Shift left `<<`.
+    /// **0x13** - Shift left `<<`.
     ///
     /// ```no_run
     /// shl r1 r2 r3 // r1 = r2 << r3
     /// ```
-    Shl,
+    Shl = 0x13,
 
-    /// Shift right `>>`.
+    /// **0x14** - Shift right `>>`.
     ///
     /// ```no_run
     /// shr r1 r2 r3 // r1 = r2 >> r3
     /// ```
-    Shr,
+    Shr = 0x14,
 
-    /// Equality comparation.
+    /// **0x15** - Equality comparation.
     ///
     /// ```no_run
     /// eq r1 r2 r3 // r1 = r2 == r3
     /// ```
-    Eq,
+    Eq = 0x15,
 
-    /// Inequality comparation.
+    /// **0x16** - Inequality comparation.
     ///
     /// ```no_run
     /// neq r1 r2 r3 // r1 = r2 != r3
     /// ```
-    Neq,
+    Neq = 0x16,
 
-    /// Less comparation.
+    /// **0x17** - Less comparation.
     ///
     /// ```no_run
     /// lt r1 r2 r3 // r1 = r2 < r3
     /// ```
-    Lt,
+    Lt = 0x17,
 
-    /// Less-equal comparation.
+    /// **0x18** - Less-equal comparation.
     ///
     /// ```no_run
     /// le r1 r2 r3 // r1 = r2 <= r3
     /// ```
-    Le,
+    Le = 0x18,
 
-    /// Greater comparation.
+    /// **0x19** - Greater comparation.
     ///
     /// ```no_run
     /// gt r1 r2 r3 // r1 = r2 > r3
     /// ```
-    Gt,
+    Gt = 0x19,
 
-    /// Greater-equal comparation.
+    /// **0x1A** - Greater-equal comparation.
     ///
     /// ```no_run
     /// ge r1 r2 r3 // r1 = r2 >= r3
     /// ```
-    Ge,
+    Ge = 0x1A,
 
-    /// Halt execution.
+    /// **0xFF** - Halt execution.
     ///
     /// ```no_run
     /// hlt
