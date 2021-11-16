@@ -2,7 +2,7 @@ use crate::Machine;
 
 pub fn Nothing(vm: &mut Machine) -> bool {
     vm.WalkAddress(1);
-    false
+    true
 }
 
 pub fn LoadRegister(vm: &mut Machine) -> bool {
