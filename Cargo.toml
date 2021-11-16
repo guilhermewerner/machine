@@ -1,0 +1,14 @@
+[package]
+name = "machine"
+version = "0.0.2"
+description = "Virtual Machine"
+repository = "https://github.com/GuilhermeWerner/Machine"
+license = "MIT"
+edition = "2021"
+publish = false
+
+[lib]
+name = "Machine"
+crate-type = ["rlib"]
+path = "Source/lib.rs"
+
