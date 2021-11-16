@@ -155,28 +155,28 @@ pub const NOT: u8 = 0x15;
 /// **0x16** - The left shift operator `<<`.
 ///
 /// ```no_run
-/// shl r1 r2 r3 // r1 = r2 << r3
+/// shl r1 r2 // r1 = r2 << 1
 /// ```
 pub const SHL: u8 = 0x16;
 
 /// **0x17** - The left shift assignment operator `<<=`.
 ///
 /// ```no_run
-/// shl r1 r2 // r1 <<= r2
+/// shl r1 // r1 <<= 1
 /// ```
 pub const SHL_ASSIGN: u8 = 0x17;
 
 /// **0x18** - The right shift operator `>>`.
 ///
 /// ```no_run
-/// shr r1 r2 r3 // r1 = r2 >> r3
+/// shr r1 r2 // r1 = r2 >> 1
 /// ```
 pub const SHR: u8 = 0x18;
 
 /// **0x19** - The right shift assignment operator `>>=`.
 ///
 /// ```no_run
-/// shr r1 r2 // r1 >>= r2
+/// shr r1 // r1 >>= 1
 /// ```
 pub const SHR_ASSIGN: u8 = 0x19;
 
