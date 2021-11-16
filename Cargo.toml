@@ -12,3 +12,6 @@ name = "Machine"
 crate-type = ["rlib"]
 path = "Source/lib.rs"
 
+[[example]]
+name = "Simple"
+path = "Examples/Simple.rs"

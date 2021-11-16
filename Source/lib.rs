@@ -1,201 +1,130 @@
+#![allow(dead_code)]
 #![allow(non_snake_case)]
+#![allow(unused_imports)]
+#![allow(unused_variables)]
 
-#[repr(u8)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, TryFromPrimitive)]
-pub enum Instruction {
-    /// **0x00** - No operation.
-    ///
-    /// ```no_run
-    /// nop
-    /// ```
-    Nop = 0x00,
+pub mod Instructions;
+pub mod Operations;
+pub mod Registers;
 
-    /// **0x01** - Load register from memory.
-    ///
-    /// ```no_run
-    /// ldr r1 0050 // r1 = mem[0050]
-    /// ```
-    Ldr = 0x01,
+use Instructions::*;
+use Operations::*;
+use Registers::*;
 
-    /// **0x02** - Store register in memory.
-    ///
-    /// ```no_run
-    /// str 0050 r1 // mem[0050] = r1
-    /// ```
-    Str = 0x02,
+//#[path = "World.rs"]
+//mod _World;
+//pub use self::_World::*;
 
-    /// **0x03** - Move register.
-    ///
-    /// ```no_run
-    /// mov r1 r2 // r1 = r2
-    /// ```
-    Mov = 0x03,
+pub const ADDRESS_COUNT: usize = 256;
+pub const REGISTER_COUNT: usize = 16;
 
-    /// **0x04** - Arithmetic addition `+`.
-    ///
-    /// ```no_run
-    /// add r1 r2 r3 // r1 = r2 + r3
-    /// ```
-    Add = 0x04,
+pub struct Machine {
+    pub program: usize,
+    pub registers: [u8; REGISTER_COUNT],
+    pub memory: [u8; ADDRESS_COUNT],
+}
 
-    /// **0x05** - Add with carry.
-    ///
-    /// ```no_run
-    /// adc r1 r2 r3 r4 // r1 = r2 + r3 + r4
-    /// ```
-    Adc = 0x05,
+impl Machine {
+    /// Create a machine with program counter.
+    pub fn New(pc: u16) -> Self {
+        Self {
+            program: pc as usize,
+            registers: [0; REGISTER_COUNT],
+            memory: [0; ADDRESS_COUNT],
+        }
+    }
 
-    /// **0x06** - Arithmetic subtraction `-`.
-    ///
-    /// ```no_run
-    /// sub r1 r2 r3 // r1 = r2 - r3
-    /// ```
-    Sub = 0x06,
+    pub fn LoadProgram(&mut self, buffer: &[u8], offset: u16) {
+        let mut i = offset as usize;
 
-    /// **0x07** - Subtract with carry.
-    ///
-    /// ```no_run
-    /// sbc r1 r2 r3 r4 // r1 = r2 - r3 - 1 - r4
-    /// ```
-    Sbc = 0x07,
+        for elem in buffer.to_vec().drain(..) {
+            self.memory[i] = elem;
+            i += 1;
+        }
+    }
 
-    /// **0x08** - Arithmetic multiplication `*`.
-    ///
-    /// ```no_run
-    /// mul r1 r2 r3 // r1 = r2 * r3
-    /// ```
-    Mul = 0x08,
+    #[allow(unused_mut)]
+    pub fn Execute(mut self) {
+        let mut running = true;
 
-    /// **0x09** - Arithmetic division `/`.
-    ///
-    /// ```no_run
-    /// div r1 r2 r3 // r1 = r2 / r3
-    /// ```
-    Div = 0x09,
+        while running {
+            self.PrintMemory();
+            //self.PrintRegisters();
 
-    /// **0x0A** - Arithmetic remainder `/`.
-    ///
-    /// ```no_run
-    /// rem r1 r2 r3 // r1 = r2 % r3
-    /// ```
-    Rem = 0x0A,
+            let opcode = self.memory[self.program];
 
-    /// **0x0B** - Arithmetic negation `-`.
-    ///
-    /// ```no_run
-    /// not r1 r2 // r1 = -r2
-    /// ```
-    Neg = 0x0B,
+            running = match opcode {
+                NOP => Nothing(&mut self),
+                LDR => LoadRegister(&mut self),
+                SVR => SaveRegister(&mut self),
+                //MOV
+                ADD => Add(&mut self),
+                ADD_ASSIGN => AddAssign(&mut self),
+                SUB => Subtract(&mut self),
+                SUB_ASSIGN => SubtractAssign(&mut self),
+                MUL => Multiply(&mut self),
+                MUL_ASSIGN => MultiplyAssign(&mut self),
+                DIV => Divide(&mut self),
+                DIV_ASSIGN => DivideAssign(&mut self),
+                REM => Remainder(&mut self),
+                REM_ASSIGN => RemainderAssign(&mut self),
+                //NEG
+                AND => And(&mut self),
+                AND_ASSIGN => AndAssign(&mut self),
+                OR => Or(&mut self),
+                OR_ASSIGN => OrAssign(&mut self),
+                XOR => Xor(&mut self),
+                XOR_ASSIGN => XorAssign(&mut self),
+                NOT => Xor(&mut self),
+                SHL => ShiftLeft(&mut self),
+                SHL_ASSIGN => ShiftLeftAssign(&mut self),
+                SHR => ShiftRight(&mut self),
+                SHR_ASSIGN => ShiftRightAssign(&mut self),
+                EQ => Equals(&mut self),
+                NEQ => NotEquals(&mut self),
+                LT => LessThan(&mut self),
+                LE => LessEquals(&mut self),
+                GT => GreaterThan(&mut self),
+                GE => GreaterEquals(&mut self),
+                HLT => Halt(&mut self),
+                _ => Nothing(&mut self),
+            }
+        }
+    }
 
-    /// **0x0C** - Bitwise AND `&`.
-    ///
-    /// ```no_run
-    /// and r1 r2 r3 // r1 = r2 & r3
-    /// ```
-    And = 0x0C,
+    fn PrintRegisters(&self) {
+        for data in self.registers.iter() {
+            print!("{:02x} ", data);
+        }
 
-    /// **0x0D** - Bitwise OR `|`.
-    ///
-    /// ```no_run
-    /// or r1 r2 r3 // r1 = r2 | r3
-    /// ```
-    Or = 0x0D,
+        println!();
+    }
 
-    /// **0x0E** - Bitwise XOR `^`.
-    ///
-    /// ```no_run
-    /// xor r1 r2 r3 // r1 = r2 ^ r3
-    /// ```
-    Xor = 0x0E,
+    fn PrintMemory(&self) {
+        let mut address = 0;
 
-    /// **0x0F** - Logical negation `!`
-    ///
-    /// ```no_run
-    /// not r1 r2 // r1 = !r2
-    /// ```
-    Not = 0x0F,
+        for data in self.memory.iter() {
+            if address % 8 == 0 {
+                println!();
+            }
 
-    /// **0x10** - Bitwise NAND.
-    ///
-    /// ```no_run
-    /// nand r1 r2 r3 // r1 = !(r2 & r3)
-    /// ```
-    Nand = 0x10,
+            print!("{:02x} ", data);
 
-    /// **0x11** - Bitwise NOR.
-    ///
-    /// ```no_run
-    /// nor r1 r2 r3 // r1 = !(r2 | r3)
-    /// ```
-    Nor = 0x11,
+            address += 1;
+        }
 
-    /// **0x12** - Bitwise XNOR.
-    ///
-    /// ```no_run
-    /// xnor r1 r2 r3 // r1 = !(r2 ^ r3)
-    /// ```
-    Xnor = 0x12,
+        println!();
+    }
 
-    /// **0x13** - Shift left `<<`.
-    ///
-    /// ```no_run
-    /// shl r1 r2 r3 // r1 = r2 << r3
-    /// ```
-    Shl = 0x13,
+    fn GetRegister(&self, register: usize) -> u8 {
+        self.registers[register]
+    }
 
-    /// **0x14** - Shift right `>>`.
-    ///
-    /// ```no_run
-    /// shr r1 r2 r3 // r1 = r2 >> r3
-    /// ```
-    Shr = 0x14,
+    fn GetProgramCounter(&self) -> u16 {
+        self.program as u16
+    }
 
-    /// **0x15** - Equality comparation.
-    ///
-    /// ```no_run
-    /// eq r1 r2 r3 // r1 = r2 == r3
-    /// ```
-    Eq = 0x15,
-
-    /// **0x16** - Inequality comparation.
-    ///
-    /// ```no_run
-    /// neq r1 r2 r3 // r1 = r2 != r3
-    /// ```
-    Neq = 0x16,
-
-    /// **0x17** - Less comparation.
-    ///
-    /// ```no_run
-    /// lt r1 r2 r3 // r1 = r2 < r3
-    /// ```
-    Lt = 0x17,
-
-    /// **0x18** - Less-equal comparation.
-    ///
-    /// ```no_run
-    /// le r1 r2 r3 // r1 = r2 <= r3
-    /// ```
-    Le = 0x18,
-
-    /// **0x19** - Greater comparation.
-    ///
-    /// ```no_run
-    /// gt r1 r2 r3 // r1 = r2 > r3
-    /// ```
-    Gt = 0x19,
-
-    /// **0x1A** - Greater-equal comparation.
-    ///
-    /// ```no_run
-    /// ge r1 r2 r3 // r1 = r2 >= r3
-    /// ```
-    Ge = 0x1A,
-
-    /// **0xFF** - Halt execution.
-    ///
-    /// ```no_run
-    /// hlt
-    /// ```
-    Hlt = 0xFF,
+    fn SetProgramCounter(&mut self, pc: u16) {
+        self.program = pc as usize;
+    }
 }
