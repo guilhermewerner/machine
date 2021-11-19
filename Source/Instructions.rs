@@ -1,4 +1,5 @@
-use crate::Machine;
+use crate::Payload::{ThreeRegisters, TwoRegisters};
+use crate::{Machine, Payload};
 
 pub fn Nothing(vm: &mut Machine) -> bool {
     vm.Next();
@@ -6,22 +7,22 @@ pub fn Nothing(vm: &mut Machine) -> bool {
 }
 
 pub fn LoadRegister(vm: &mut Machine) -> bool {
-    let reg = vm.ReadByte(None);
-    let addr = vm.ReadWord(None);
-    let val = vm.ReadWord(Some(addr));
+    let (reg, addr) = Payload::GetRegisterAddress(vm);
 
-    vm.registry.Set(reg, val);
+    let data = vm.ReadWord(Some(addr));
+
+    vm.registry.Set(reg, data);
     vm.Walk(5);
 
     true
 }
 
 pub fn SaveRegister(vm: &mut Machine) -> bool {
-    let addr = vm.ReadWord(None);
-    let reg = vm.ReadByte(None);
-    let val = vm.registry.Get(reg);
+    let (addr, reg) = Payload::GetAddressRegister(vm);
 
-    vm.WriteWord(Some(addr), val);
+    let data = vm.registry.Get(reg);
+
+    vm.WriteWord(Some(addr), data);
     vm.Walk(5);
 
     true
@@ -33,131 +34,106 @@ pub fn Move(_vm: &mut Machine) -> bool {
 }
 
 pub fn Add(vm: &mut Machine) -> bool {
-    let reg = vm.ReadByte(None);
-
-    let reg1 = vm.ReadByte(None);
-    let op1 = u32::from_be_bytes(vm.registry.Get(reg1));
-    let reg2 = vm.ReadByte(None);
-    let op2 = u32::from_be_bytes(vm.registry.Get(reg2));
-
-    vm.registry.Set(reg, (op1 + op2).to_be_bytes());
-    vm.Walk(3);
-
-    true
+    let payload = Payload::GetThreeRegisters(vm);
+    _Add(vm, payload)
 }
 
 pub fn AddAssign(vm: &mut Machine) -> bool {
-    let reg1 = vm.ReadByte(None);
-    let op1 = u32::from_be_bytes(vm.registry.Get(reg1));
-    let reg2 = vm.ReadByte(None);
-    let op2 = u32::from_be_bytes(vm.registry.Get(reg2));
+    let payload = Payload::GetTwoRegisters(vm);
+    _Add(vm, (payload.0, payload.0, payload.1))
+}
 
-    vm.registry.Set(reg1, (op1 + op2).to_be_bytes());
-    vm.Walk(2);
+#[inline]
+fn _Add(vm: &mut Machine, payload: ThreeRegisters) -> bool {
+    let a = u32::from_be_bytes(vm.registry.Get(payload.1));
+    let b = u32::from_be_bytes(vm.registry.Get(payload.2));
+
+    vm.registry.Set(payload.0, (a + b).to_be_bytes());
+    vm.Walk(3);
 
     true
 }
 
 pub fn Subtract(vm: &mut Machine) -> bool {
-    let reg = vm.ReadByte(None);
-
-    let reg1 = vm.ReadByte(None);
-    let op1 = u32::from_be_bytes(vm.registry.Get(reg1));
-    let reg2 = vm.ReadByte(None);
-    let op2 = u32::from_be_bytes(vm.registry.Get(reg2));
-
-    vm.registry.Set(reg, (op1 - op2).to_be_bytes());
-    vm.Walk(3);
-
-    true
+    let payload = Payload::GetThreeRegisters(vm);
+    _Subtract(vm, payload)
 }
 
 pub fn SubtractAssign(vm: &mut Machine) -> bool {
-    let reg1 = vm.ReadByte(None);
-    let op1 = u32::from_be_bytes(vm.registry.Get(reg1));
-    let reg2 = vm.ReadByte(None);
-    let op2 = u32::from_be_bytes(vm.registry.Get(reg2));
+    let payload = Payload::GetTwoRegisters(vm);
+    _Subtract(vm, (payload.0, payload.0, payload.1))
+}
 
-    vm.registry.Set(reg1, (op1 - op2).to_be_bytes());
-    vm.Walk(2);
+#[inline]
+fn _Subtract(vm: &mut Machine, payload: ThreeRegisters) -> bool {
+    let a = u32::from_be_bytes(vm.registry.Get(payload.1));
+    let b = u32::from_be_bytes(vm.registry.Get(payload.2));
+
+    vm.registry.Set(payload.0, (a - b).to_be_bytes());
+    vm.Walk(3);
 
     true
 }
 
 pub fn Multiply(vm: &mut Machine) -> bool {
-    let reg = vm.ReadByte(None);
-
-    let reg1 = vm.ReadByte(None);
-    let op1 = u32::from_be_bytes(vm.registry.Get(reg1));
-    let reg2 = vm.ReadByte(None);
-    let op2 = u32::from_be_bytes(vm.registry.Get(reg2));
-
-    vm.registry.Set(reg, (op1 * op2).to_be_bytes());
-    vm.Walk(3);
-
-    true
+    let payload = Payload::GetThreeRegisters(vm);
+    _Multiply(vm, payload)
 }
 
 pub fn MultiplyAssign(vm: &mut Machine) -> bool {
-    let reg1 = vm.ReadByte(None);
-    let op1 = u32::from_be_bytes(vm.registry.Get(reg1));
-    let reg2 = vm.ReadByte(None);
-    let op2 = u32::from_be_bytes(vm.registry.Get(reg2));
+    let payload = Payload::GetTwoRegisters(vm);
+    _Multiply(vm, (payload.0, payload.0, payload.1))
+}
 
-    vm.registry.Set(reg1, (op1 * op2).to_be_bytes());
-    vm.Walk(2);
+#[inline]
+fn _Multiply(vm: &mut Machine, payload: ThreeRegisters) -> bool {
+    let a = u32::from_be_bytes(vm.registry.Get(payload.1));
+    let b = u32::from_be_bytes(vm.registry.Get(payload.2));
+
+    vm.registry.Set(payload.0, (a * b).to_be_bytes());
+    vm.Walk(3);
 
     true
 }
 
 pub fn Divide(vm: &mut Machine) -> bool {
-    let reg = vm.ReadByte(None);
-
-    let reg1 = vm.ReadByte(None);
-    let op1 = u32::from_be_bytes(vm.registry.Get(reg1));
-    let reg2 = vm.ReadByte(None);
-    let op2 = u32::from_be_bytes(vm.registry.Get(reg2));
-
-    vm.registry.Set(reg, (op1 / op2).to_be_bytes());
-    vm.Walk(3);
-
-    true
+    let payload = Payload::GetThreeRegisters(vm);
+    _Divide(vm, payload)
 }
 
 pub fn DivideAssign(vm: &mut Machine) -> bool {
-    let reg1 = vm.ReadByte(None);
-    let op1 = u32::from_be_bytes(vm.registry.Get(reg1));
-    let reg2 = vm.ReadByte(None);
-    let op2 = u32::from_be_bytes(vm.registry.Get(reg2));
+    let payload = Payload::GetTwoRegisters(vm);
+    _Divide(vm, (payload.0, payload.0, payload.1))
+}
 
-    vm.registry.Set(reg1, (op1 / op2).to_be_bytes());
-    vm.Walk(2);
+#[inline]
+fn _Divide(vm: &mut Machine, payload: ThreeRegisters) -> bool {
+    let a = u32::from_be_bytes(vm.registry.Get(payload.1));
+    let b = u32::from_be_bytes(vm.registry.Get(payload.2));
+
+    vm.registry.Set(payload.0, (a * b).to_be_bytes());
+    vm.Walk(3);
 
     true
 }
 
 pub fn Remainder(vm: &mut Machine) -> bool {
-    let reg = vm.ReadByte(None);
-
-    let reg1 = vm.ReadByte(None);
-    let op1 = u32::from_be_bytes(vm.registry.Get(reg1));
-    let reg2 = vm.ReadByte(None);
-    let op2 = u32::from_be_bytes(vm.registry.Get(reg2));
-
-    vm.registry.Set(reg, (op1 % op2).to_be_bytes());
-    vm.Walk(3);
-
-    true
+    let payload = Payload::GetThreeRegisters(vm);
+    _Remainder(vm, payload)
 }
 
 pub fn RemainderAssign(vm: &mut Machine) -> bool {
-    let reg1 = vm.ReadByte(None);
-    let op1 = u32::from_be_bytes(vm.registry.Get(reg1));
-    let reg2 = vm.ReadByte(None);
-    let op2 = u32::from_be_bytes(vm.registry.Get(reg2));
+    let payload = Payload::GetTwoRegisters(vm);
+    _Remainder(vm, (payload.0, payload.0, payload.1))
+}
 
-    vm.registry.Set(reg1, (op1 % op2).to_be_bytes());
-    vm.Walk(2);
+#[inline]
+fn _Remainder(vm: &mut Machine, payload: ThreeRegisters) -> bool {
+    let a = u32::from_be_bytes(vm.registry.Get(payload.1));
+    let b = u32::from_be_bytes(vm.registry.Get(payload.2));
+
+    vm.registry.Set(payload.0, (a * b).to_be_bytes());
+    vm.Walk(3);
 
     true
 }
@@ -168,216 +144,186 @@ pub fn Neg(_vm: &mut Machine) -> bool {
 }
 
 pub fn And(vm: &mut Machine) -> bool {
-    let reg = vm.ReadByte(None);
-
-    let reg1 = vm.ReadByte(None);
-    let op1 = u32::from_be_bytes(vm.registry.Get(reg1));
-    let reg2 = vm.ReadByte(None);
-    let op2 = u32::from_be_bytes(vm.registry.Get(reg2));
-
-    vm.registry.Set(reg, (op1 & op2).to_be_bytes());
-    vm.Walk(3);
-
-    true
+    let payload = Payload::GetThreeRegisters(vm);
+    _And(vm, payload)
 }
 
 pub fn AndAssign(vm: &mut Machine) -> bool {
-    let reg1 = vm.ReadByte(None);
-    let op1 = u32::from_be_bytes(vm.registry.Get(reg1));
-    let reg2 = vm.ReadByte(None);
-    let op2 = u32::from_be_bytes(vm.registry.Get(reg2));
+    let payload = Payload::GetTwoRegisters(vm);
+    _And(vm, (payload.0, payload.0, payload.1))
+}
 
-    vm.registry.Set(reg1, (op1 & op2).to_be_bytes());
-    vm.Walk(2);
+#[inline]
+fn _And(vm: &mut Machine, payload: ThreeRegisters) -> bool {
+    let a = u32::from_be_bytes(vm.registry.Get(payload.1));
+    let b = u32::from_be_bytes(vm.registry.Get(payload.2));
+
+    vm.registry.Set(payload.0, (a & b).to_be_bytes());
+    vm.Walk(3);
 
     true
 }
 
 pub fn Or(vm: &mut Machine) -> bool {
-    let reg = vm.ReadByte(None);
-
-    let reg1 = vm.ReadByte(None);
-    let op1 = u32::from_be_bytes(vm.registry.Get(reg1));
-    let reg2 = vm.ReadByte(None);
-    let op2 = u32::from_be_bytes(vm.registry.Get(reg2));
-
-    vm.registry.Set(reg, (op1 | op2).to_be_bytes());
-    vm.Walk(3);
-
-    true
+    let payload = Payload::GetThreeRegisters(vm);
+    _Or(vm, payload)
 }
 
 pub fn OrAssign(vm: &mut Machine) -> bool {
-    let reg1 = vm.ReadByte(None);
-    let op1 = u32::from_be_bytes(vm.registry.Get(reg1));
-    let reg2 = vm.ReadByte(None);
-    let op2 = u32::from_be_bytes(vm.registry.Get(reg2));
+    let payload = Payload::GetTwoRegisters(vm);
+    _Or(vm, (payload.0, payload.0, payload.1))
+}
 
-    vm.registry.Set(reg1, (op1 | op2).to_be_bytes());
-    vm.Walk(2);
+#[inline]
+fn _Or(vm: &mut Machine, payload: ThreeRegisters) -> bool {
+    let a = u32::from_be_bytes(vm.registry.Get(payload.1));
+    let b = u32::from_be_bytes(vm.registry.Get(payload.2));
+
+    vm.registry.Set(payload.0, (a | b).to_be_bytes());
+    vm.Walk(3);
 
     true
 }
 
 pub fn Xor(vm: &mut Machine) -> bool {
-    let reg = vm.ReadByte(None);
+    let payload = Payload::GetThreeRegisters(vm);
+    _Xor(vm, payload)
+}
 
-    let reg1 = vm.ReadByte(None);
-    let op1 = u32::from_be_bytes(vm.registry.Get(reg1));
-    let reg2 = vm.ReadByte(None);
-    let op2 = u32::from_be_bytes(vm.registry.Get(reg2));
+pub fn XorAssign(vm: &mut Machine) -> bool {
+    let payload = Payload::GetTwoRegisters(vm);
+    _Xor(vm, (payload.0, payload.0, payload.1))
+}
 
-    vm.registry.Set(reg, (op1 ^ op2).to_be_bytes());
+#[inline]
+fn _Xor(vm: &mut Machine, payload: ThreeRegisters) -> bool {
+    let a = u32::from_be_bytes(vm.registry.Get(payload.1));
+    let b = u32::from_be_bytes(vm.registry.Get(payload.2));
+
+    vm.registry.Set(payload.0, (a ^ b).to_be_bytes());
     vm.Walk(3);
 
     true
 }
 
-pub fn XorAssign(vm: &mut Machine) -> bool {
-    let reg1 = vm.ReadByte(None);
-    let op1 = u32::from_be_bytes(vm.registry.Get(reg1));
-    let reg2 = vm.ReadByte(None);
-    let op2 = u32::from_be_bytes(vm.registry.Get(reg2));
-
-    vm.registry.Set(reg1, (op1 ^ op2).to_be_bytes());
-    vm.Walk(2);
-
-    true
-}
-
 pub fn Not(vm: &mut Machine) -> bool {
-    let reg = vm.ReadByte(None);
-    let op = u32::from_be_bytes(vm.registry.Get(reg));
+    let r0 = Payload::GetRegister(vm);
 
-    vm.registry.Set(reg, (!op).to_be_bytes());
+    let a = u32::from_be_bytes(vm.registry.Get(r0));
+
+    vm.registry.Set(r0, (!a).to_be_bytes());
     vm.Walk(2);
 
     true
 }
 
 pub fn ShiftLeft(vm: &mut Machine) -> bool {
-    let reg = vm.ReadByte(None);
-
-    let reg1 = vm.ReadByte(None);
-    let op1 = u32::from_be_bytes(vm.registry.Get(reg1));
-
-    vm.registry.Set(reg, (op1 << 1).to_be_bytes());
-    vm.Walk(3);
-
-    true
+    let payload = Payload::GetTwoRegisters(vm);
+    _ShiftLeft(vm, payload)
 }
 
 pub fn ShiftLeftAssign(vm: &mut Machine) -> bool {
-    let reg1 = vm.ReadByte(None);
-    let op1 = u32::from_be_bytes(vm.registry.Get(reg1));
+    let payload = Payload::GetRegister(vm);
+    _ShiftLeft(vm, (payload, payload))
+}
 
-    vm.registry.Set(reg1, (op1 << 1).to_be_bytes());
-    vm.Walk(2);
+#[inline]
+fn _ShiftLeft(vm: &mut Machine, payload: TwoRegisters) -> bool {
+    let a = u32::from_be_bytes(vm.registry.Get(payload.1));
+
+    vm.registry.Set(payload.0, (a << 1).to_be_bytes());
+    vm.Walk(3);
 
     true
 }
 
 pub fn ShiftRight(vm: &mut Machine) -> bool {
-    let reg = vm.ReadByte(None);
+    let payload = Payload::GetTwoRegisters(vm);
+    _ShiftRight(vm, payload)
+}
 
-    let reg1 = vm.ReadByte(None);
-    let op1 = u32::from_be_bytes(vm.registry.Get(reg1));
+pub fn ShiftRightAssign(vm: &mut Machine) -> bool {
+    let payload = Payload::GetRegister(vm);
+    _ShiftRight(vm, (payload, payload))
+}
 
-    vm.registry.Set(reg, (op1 >> 1).to_be_bytes());
+#[inline]
+fn _ShiftRight(vm: &mut Machine, payload: TwoRegisters) -> bool {
+    let a = u32::from_be_bytes(vm.registry.Get(payload.1));
+
+    vm.registry.Set(payload.0, (a >> 1).to_be_bytes());
     vm.Walk(3);
 
     true
 }
 
-pub fn ShiftRightAssign(vm: &mut Machine) -> bool {
-    let reg1 = vm.ReadByte(None);
-    let op1 = u32::from_be_bytes(vm.registry.Get(reg1));
-
-    vm.registry.Set(reg1, (op1 >> 1).to_be_bytes());
-    vm.Walk(2);
-
-    true
-}
-
 pub fn Equals(vm: &mut Machine) -> bool {
-    let reg = vm.ReadByte(None);
+    let (r0, r1, r2) = Payload::GetThreeRegisters(vm);
 
-    let reg1 = vm.ReadByte(None);
-    let op1 = u32::from_be_bytes(vm.registry.Get(reg1));
-    let reg2 = vm.ReadByte(None);
-    let op2 = u32::from_be_bytes(vm.registry.Get(reg2));
+    let a = u32::from_be_bytes(vm.registry.Get(r1));
+    let b = u32::from_be_bytes(vm.registry.Get(r2));
 
-    vm.registry.Set(reg, ((op1 == op2) as u32).to_be_bytes());
+    vm.registry.Set(r0, ((a == b) as u32).to_be_bytes());
     vm.Walk(3);
 
     true
 }
 
 pub fn NotEquals(vm: &mut Machine) -> bool {
-    let reg = vm.ReadByte(None);
+    let (r0, r1, r2) = Payload::GetThreeRegisters(vm);
 
-    let reg1 = vm.ReadByte(None);
-    let op1 = u32::from_be_bytes(vm.registry.Get(reg1));
-    let reg2 = vm.ReadByte(None);
-    let op2 = u32::from_be_bytes(vm.registry.Get(reg2));
+    let a = u32::from_be_bytes(vm.registry.Get(r1));
+    let b = u32::from_be_bytes(vm.registry.Get(r2));
 
-    vm.registry.Set(reg, ((op1 != op2) as u32).to_be_bytes());
+    vm.registry.Set(r0, ((a != b) as u32).to_be_bytes());
     vm.Walk(3);
 
     true
 }
 
 pub fn LessThan(vm: &mut Machine) -> bool {
-    let reg = vm.ReadByte(None);
+    let (r0, r1, r2) = Payload::GetThreeRegisters(vm);
 
-    let reg1 = vm.ReadByte(None);
-    let op1 = u32::from_be_bytes(vm.registry.Get(reg1));
-    let reg2 = vm.ReadByte(None);
-    let op2 = u32::from_be_bytes(vm.registry.Get(reg2));
+    let a = u32::from_be_bytes(vm.registry.Get(r1));
+    let b = u32::from_be_bytes(vm.registry.Get(r2));
 
-    vm.registry.Set(reg, ((op1 < op2) as u32).to_be_bytes());
+    vm.registry.Set(r0, ((a < b) as u32).to_be_bytes());
     vm.Walk(3);
 
     true
 }
 
 pub fn LessEquals(vm: &mut Machine) -> bool {
-    let reg = vm.ReadByte(None);
+    let (r0, r1, r2) = Payload::GetThreeRegisters(vm);
 
-    let reg1 = vm.ReadByte(None);
-    let op1 = u32::from_be_bytes(vm.registry.Get(reg1));
-    let reg2 = vm.ReadByte(None);
-    let op2 = u32::from_be_bytes(vm.registry.Get(reg2));
+    let a = u32::from_be_bytes(vm.registry.Get(r1));
+    let b = u32::from_be_bytes(vm.registry.Get(r2));
 
-    vm.registry.Set(reg, ((op1 <= op2) as u32).to_be_bytes());
+    vm.registry.Set(r0, ((a <= b) as u32).to_be_bytes());
     vm.Walk(3);
 
     true
 }
 
 pub fn GreaterThan(vm: &mut Machine) -> bool {
-    let reg = vm.ReadByte(None);
+    let (r0, r1, r2) = Payload::GetThreeRegisters(vm);
 
-    let reg1 = vm.ReadByte(None);
-    let op1 = u32::from_be_bytes(vm.registry.Get(reg1));
-    let reg2 = vm.ReadByte(None);
-    let op2 = u32::from_be_bytes(vm.registry.Get(reg2));
+    let a = u32::from_be_bytes(vm.registry.Get(r1));
+    let b = u32::from_be_bytes(vm.registry.Get(r2));
 
-    vm.registry.Set(reg, ((op1 > op2) as u32).to_be_bytes());
+    vm.registry.Set(r0, ((a > b) as u32).to_be_bytes());
     vm.Walk(3);
 
     true
 }
 
 pub fn GreaterEquals(vm: &mut Machine) -> bool {
-    let reg = vm.ReadByte(None);
+    let (r0, r1, r2) = Payload::GetThreeRegisters(vm);
 
-    let reg1 = vm.ReadByte(None);
-    let op1 = u32::from_be_bytes(vm.registry.Get(reg1));
-    let reg2 = vm.ReadByte(None);
-    let op2 = u32::from_be_bytes(vm.registry.Get(reg2));
+    let a = u32::from_be_bytes(vm.registry.Get(r1));
+    let b = u32::from_be_bytes(vm.registry.Get(r2));
 
-    vm.registry.Set(reg, ((op1 >= op2) as u32).to_be_bytes());
+    vm.registry.Set(r0, ((a >= b) as u32).to_be_bytes());
     vm.Walk(3);
 
     true

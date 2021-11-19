@@ -3,6 +3,7 @@
 mod Instructions;
 
 pub mod Operations;
+pub mod Payload;
 pub mod Types;
 
 #[path = "Limits.rs"]
