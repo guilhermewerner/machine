@@ -1,33 +1,36 @@
-use std::panic;
-
 use crate::Instructions::*;
 use crate::Operations::*;
+use crate::Types::*;
+use crate::{Memory, Registry, Stack, HEAP_LIMIT, STACK_SIZE};
 
-pub const ADDRESS_COUNT: usize = 256;
-pub const REGISTER_COUNT: usize = 16;
-
+#[allow(dead_code)]
 pub struct Machine {
-    program: usize,
-    registers: [u8; REGISTER_COUNT],
-    memory: [u8; ADDRESS_COUNT],
+    pub(crate) program_counter: usize,
+    pub(crate) registry: Registry,
+    pub(crate) stack_pointer: usize,
+    pub(crate) link_register: usize,
+    pub(crate) stack: Stack,
+    pub(crate) memory_pointer: usize,
+    pub(crate) heap: Memory,
 }
 
+#[allow(dead_code)]
 impl Machine {
-    /// Create a machine with program counter.
-    pub fn New(pc: u8) -> Self {
+    pub fn New(address: Word) -> Self {
         Self {
-            program: pc as usize,
-            registers: [0; REGISTER_COUNT],
-            memory: [0; ADDRESS_COUNT],
+            program_counter: u32::from_be_bytes(address) as usize,
+            registry: Registry::default(),
+            stack_pointer: 0,
+            link_register: 0,
+            stack: Stack::New(STACK_SIZE),
+            memory_pointer: 0,
+            heap: Memory::New(HEAP_LIMIT),
         }
     }
 
-    pub fn LoadProgram(&mut self, buffer: &[u8], offset: u8) {
-        let mut i = offset as usize;
-
-        for elem in buffer.to_vec().drain(..) {
-            self.memory[i] = elem;
-            i += 1;
+    pub fn LoadProgram(&mut self, buffer: &[u8]) {
+        for (addr, data) in buffer.to_vec().drain(..).enumerate() {
+            self.heap.WriteByte(addr as u32, data);
         }
     }
 
@@ -35,10 +38,10 @@ impl Machine {
         let mut running = true;
 
         while running {
-            //self.PrintMemory();
-            self.PrintRegisters();
+            self.registry.Print();
 
-            let opcode = self.memory[self.program];
+            let opcode = self.heap.ReadByte(self.program_counter as u32);
+            self.memory_pointer = self.program_counter + 1;
 
             running = match opcode {
                 NOP => Nothing(&mut self),
@@ -79,77 +82,55 @@ impl Machine {
         }
     }
 
-    #[allow(dead_code)]
-    fn PrintRegisters(&self) {
-        for data in self.registers.iter() {
-            print!("{:02x} ", data);
+    pub(crate) fn ReadByte(&mut self, addr: Option<Word>) -> Byte {
+        let mut mp = self.memory_pointer as u32;
+
+        if let Some(addr) = addr {
+            mp = u32::from_be_bytes(addr);
         }
 
-        println!();
+        self.memory_pointer = (mp + 1) as usize;
+        self.heap.ReadByte(mp)
     }
 
-    #[allow(dead_code)]
-    fn PrintMemory(&self) {
-        let mut address = 0;
+    pub(crate) fn WriteByte(&mut self, addr: Option<Word>, value: Byte) {
+        let mut mp = self.memory_pointer as u32;
 
-        for data in self.memory.iter() {
-            if address % 8 == 0 {
-                println!();
-            }
+        if let Some(addr) = addr {
+            mp = u32::from_be_bytes(addr);
+        };
 
-            print!("{:02x} ", data);
+        self.memory_pointer = (mp + 1) as usize;
+        self.heap.WriteByte(mp, value);
+    }
 
-            address += 1;
+    pub(crate) fn ReadWord(&mut self, addr: Option<Word>) -> Word {
+        let mut mp = self.memory_pointer as u32;
+
+        if let Some(addr) = addr {
+            mp = u32::from_be_bytes(addr);
         }
 
-        println!();
+        self.memory_pointer = (mp + 4) as usize;
+        self.heap.ReadWord(mp as u32)
     }
 
-    pub fn GetMemory(&self, addr: u8) -> u8 {
-        let index = addr as usize;
+    pub(crate) fn WriteWord(&mut self, addr: Option<Word>, value: Word) {
+        let mut mp = self.memory_pointer as u32;
 
-        if index < ADDRESS_COUNT {
-            self.memory[index]
-        } else {
-            panic!("Invalid Address!")
+        if let Some(addr) = addr {
+            mp = u32::from_be_bytes(addr);
         }
+
+        self.memory_pointer = (mp + 4) as usize;
+        self.heap.WriteWord(mp as u32, value);
     }
 
-    pub fn SetMemory(&mut self, addr: u8, val: u8) {
-        let index = addr as usize;
-
-        if index < ADDRESS_COUNT {
-            self.memory[index] = val;
-        }
+    pub(crate) fn Next(&mut self) {
+        self.program_counter += 1;
     }
 
-    pub fn GetRegister(&self, reg: u8) -> u8 {
-        let index = reg as usize;
-
-        if index < REGISTER_COUNT {
-            self.registers[index]
-        } else {
-            panic!("Invalid Register!")
-        }
-    }
-
-    pub fn SetRegister(&mut self, reg: u8, val: u8) {
-        let index = reg as usize;
-
-        if index < REGISTER_COUNT {
-            self.registers[index] = val;
-        }
-    }
-
-    pub fn GetAddress(&self) -> u8 {
-        self.program as u8
-    }
-
-    pub fn WalkAddress(&mut self, bytes: i8) {
-        self.program += bytes as usize;
-    }
-
-    pub fn SetAddress(&mut self, addr: u8) {
-        self.program = addr as usize;
+    pub(crate) fn Walk(&mut self, bytes: Byte) {
+        self.program_counter += bytes as usize;
     }
 }
