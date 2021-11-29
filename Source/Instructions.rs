@@ -17,13 +17,35 @@ pub fn LoadRegister(vm: &mut Machine) -> bool {
     true
 }
 
-pub fn SaveRegister(vm: &mut Machine) -> bool {
+pub fn StoreRegister(vm: &mut Machine) -> bool {
     let (addr, reg) = Payload::GetAddressRegister(vm);
 
     let data = vm.registry.Get(reg);
 
     vm.WriteWord(Some(addr), data);
     vm.Walk(5);
+
+    true
+}
+
+pub fn IncrementRegister(vm: &mut Machine) -> bool {
+    let r0 = Payload::GetRegister(vm);
+
+    let a = u32::from_be_bytes(vm.registry.Get(r0));
+
+    vm.registry.Set(r0, (a + 1).to_be_bytes());
+    vm.Walk(2);
+
+    true
+}
+
+pub fn DecrementRegister(vm: &mut Machine) -> bool {
+    let r0 = Payload::GetRegister(vm);
+
+    let a = u32::from_be_bytes(vm.registry.Get(r0));
+
+    vm.registry.Set(r0, (a - 1).to_be_bytes());
+    vm.Walk(2);
 
     true
 }

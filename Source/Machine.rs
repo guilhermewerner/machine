@@ -1,30 +1,39 @@
 use crate::Instructions::*;
 use crate::Operations::*;
 use crate::Types::*;
-use crate::{Memory, Registry, Stack, HEAP_LIMIT, STACK_SIZE};
+use crate::{Heap, Registry, Stack, HEAP_LIMIT, STACK_SIZE};
 
 #[allow(dead_code)]
 pub struct Machine {
-    pub(crate) program_counter: usize,
+    /// Program Counter.
+    pub(crate) pc: usize,
+
+    /// General-purpose registers.
     pub(crate) registry: Registry,
-    pub(crate) stack_pointer: usize,
-    pub(crate) link_register: usize,
+
+    /// Stack Pointer.
+    pub(crate) sp: usize,
+
+    /// Stack Memory.
     pub(crate) stack: Stack,
-    pub(crate) memory_pointer: usize,
-    pub(crate) heap: Memory,
+
+    /// Memory Pointer.
+    pub(crate) mp: usize,
+
+    /// Heap Memory.
+    pub(crate) heap: Heap,
 }
 
 #[allow(dead_code)]
 impl Machine {
     pub fn New(address: Word) -> Self {
         Self {
-            program_counter: u32::from_be_bytes(address) as usize,
+            pc: u32::from_be_bytes(address) as usize,
             registry: Registry::default(),
-            stack_pointer: 0,
-            link_register: 0,
+            sp: 0,
             stack: Stack::New(STACK_SIZE),
-            memory_pointer: 0,
-            heap: Memory::New(HEAP_LIMIT),
+            mp: 0,
+            heap: Heap::New(HEAP_LIMIT),
         }
     }
 
@@ -40,14 +49,15 @@ impl Machine {
         while running {
             self.registry.Print();
 
-            let opcode = self.heap.ReadByte(self.program_counter as u32);
-            self.memory_pointer = self.program_counter + 1;
+            let opcode = self.heap.ReadByte(self.pc as u32);
+            self.mp = self.pc + 1;
 
             running = match opcode {
                 NOP => Nothing(&mut self),
                 LDR => LoadRegister(&mut self),
-                SVR => SaveRegister(&mut self),
-                //MOV
+                STR => StoreRegister(&mut self),
+                INC => IncrementRegister(&mut self),
+                DEC => DecrementRegister(&mut self),
                 ADD => Add(&mut self),
                 ADD_ASSIGN => AddAssign(&mut self),
                 SUB => Subtract(&mut self),
@@ -83,54 +93,76 @@ impl Machine {
     }
 
     pub(crate) fn ReadByte(&mut self, addr: Option<Word>) -> Byte {
-        let mut mp = self.memory_pointer as u32;
+        let mut mp = self.mp as u32;
 
         if let Some(addr) = addr {
             mp = u32::from_be_bytes(addr);
         }
 
-        self.memory_pointer = (mp + 1) as usize;
+        self.mp = (mp + 1) as usize;
         self.heap.ReadByte(mp)
     }
 
     pub(crate) fn WriteByte(&mut self, addr: Option<Word>, value: Byte) {
-        let mut mp = self.memory_pointer as u32;
+        let mut mp = self.mp as u32;
 
         if let Some(addr) = addr {
             mp = u32::from_be_bytes(addr);
         };
 
-        self.memory_pointer = (mp + 1) as usize;
+        self.mp = (mp + 1) as usize;
         self.heap.WriteByte(mp, value);
     }
 
-    pub(crate) fn ReadWord(&mut self, addr: Option<Word>) -> Word {
-        let mut mp = self.memory_pointer as u32;
+    pub(crate) fn ReadHalf(&mut self, addr: Option<Word>) -> Half {
+        let mut mp = self.mp as u32;
 
         if let Some(addr) = addr {
             mp = u32::from_be_bytes(addr);
         }
 
-        self.memory_pointer = (mp + 4) as usize;
+        self.mp = (mp + 4) as usize;
+        self.heap.ReadHalf(mp as u32)
+    }
+
+    pub(crate) fn WriteHalf(&mut self, addr: Option<Word>, value: Half) {
+        let mut mp = self.mp as u32;
+
+        if let Some(addr) = addr {
+            mp = u32::from_be_bytes(addr);
+        }
+
+        self.mp = (mp + 4) as usize;
+        self.heap.WriteHalf(mp as u32, value);
+    }
+
+    pub(crate) fn ReadWord(&mut self, addr: Option<Word>) -> Word {
+        let mut mp = self.mp as u32;
+
+        if let Some(addr) = addr {
+            mp = u32::from_be_bytes(addr);
+        }
+
+        self.mp = (mp + 4) as usize;
         self.heap.ReadWord(mp as u32)
     }
 
     pub(crate) fn WriteWord(&mut self, addr: Option<Word>, value: Word) {
-        let mut mp = self.memory_pointer as u32;
+        let mut mp = self.mp as u32;
 
         if let Some(addr) = addr {
             mp = u32::from_be_bytes(addr);
         }
 
-        self.memory_pointer = (mp + 4) as usize;
+        self.mp = (mp + 4) as usize;
         self.heap.WriteWord(mp as u32, value);
     }
 
     pub(crate) fn Next(&mut self) {
-        self.program_counter += 1;
+        self.pc += 1;
     }
 
     pub(crate) fn Walk(&mut self, bytes: Byte) {
-        self.program_counter += bytes as usize;
+        self.pc += bytes as usize;
     }
 }
