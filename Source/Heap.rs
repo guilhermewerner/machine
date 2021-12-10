@@ -2,36 +2,36 @@ use crate::Types::*;
 use std::mem;
 
 pub struct Heap {
-    buffer: Vec<Byte>,
+    inner: Vec<Byte>,
     lenght: usize,
 }
 
 impl Heap {
     pub fn New(size: usize) -> Self {
         Self {
-            buffer: Vec::with_capacity(size),
+            inner: Vec::with_capacity(size),
             lenght: size,
         }
     }
 
     pub fn IsEmpty(&self) -> bool {
-        self.buffer.is_empty()
+        self.inner.is_empty()
     }
 
     pub fn Flush(&mut self) {
-        self.buffer.clear();
+        self.inner.clear();
     }
 
     pub fn ReadByte(&mut self, addr: u32) -> Byte {
         let index = addr as usize;
-        *self.buffer.get(index).unwrap()
+        *self.inner.get(index).unwrap()
     }
 
     pub fn WriteByte(&mut self, addr: u32, value: Byte) {
         let index = addr as usize;
 
         if index < self.lenght {
-            self.buffer.push(value);
+            self.inner.push(value);
         }
     }
 
@@ -42,7 +42,7 @@ impl Heap {
         let mut buffer = [0; BYTES];
 
         for i in 0..BYTES {
-            buffer[i] = *self.buffer.get(index).unwrap_or(&0);
+            buffer[i] = *self.inner.get(index).unwrap_or(&0);
             index += 1;
         }
 
@@ -53,7 +53,7 @@ impl Heap {
         let index = addr as usize;
 
         if index < self.lenght {
-            self.buffer.extend(value);
+            self.inner.extend(value);
         }
     }
 
@@ -64,7 +64,7 @@ impl Heap {
         let mut buffer = [0; BYTES];
 
         for i in 0..BYTES {
-            buffer[i] = *self.buffer.get(index).unwrap_or(&0);
+            buffer[i] = *self.inner.get(index).unwrap_or(&0);
             index += 1;
         }
 
@@ -75,7 +75,51 @@ impl Heap {
         let index = addr as usize;
 
         if index < self.lenght {
-            self.buffer.extend(value);
+            self.inner.extend(value);
+        }
+    }
+
+    pub fn ReadDWord(&mut self, addr: u32) -> DWord {
+        let mut index = addr as usize;
+
+        const BYTES: usize = mem::size_of::<DWord>();
+        let mut buffer = [0; BYTES];
+
+        for i in 0..BYTES {
+            buffer[i] = *self.inner.get(index).unwrap_or(&0);
+            index += 1;
+        }
+
+        buffer
+    }
+
+    pub fn WriteDWord(&mut self, addr: u32, value: DWord) {
+        let index = addr as usize;
+
+        if index < self.lenght {
+            self.inner.extend(value);
+        }
+    }
+
+    pub fn ReadQWord(&mut self, addr: u32) -> QWord {
+        let mut index = addr as usize;
+
+        const BYTES: usize = mem::size_of::<QWord>();
+        let mut buffer = [0; BYTES];
+
+        for i in 0..BYTES {
+            buffer[i] = *self.inner.get(index).unwrap_or(&0);
+            index += 1;
+        }
+
+        buffer
+    }
+
+    pub fn WriteQWord(&mut self, addr: u32, value: QWord) {
+        let index = addr as usize;
+
+        if index < self.lenght {
+            self.inner.extend(value);
         }
     }
 }

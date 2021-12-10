@@ -1,4 +1,3 @@
-use crate::Payload::{ThreeRegisters, TwoRegisters};
 use crate::{Machine, Payload};
 
 pub fn Nothing(vm: &mut Machine) -> bool {
@@ -50,23 +49,20 @@ pub fn DecrementRegister(vm: &mut Machine) -> bool {
     true
 }
 
-#[allow(dead_code)]
-pub fn Move(_vm: &mut Machine) -> bool {
-    false
+pub fn Neg(vm: &mut Machine) -> bool {
+    let payload = Payload::GetTwoRegisters(vm);
+
+    let a = i32::from_be_bytes(vm.registry.Get(payload.1));
+
+    vm.registry.Set(payload.0, (-a).to_be_bytes());
+    vm.Walk(3);
+
+    true
 }
 
 pub fn Add(vm: &mut Machine) -> bool {
     let payload = Payload::GetThreeRegisters(vm);
-    _Add(vm, payload)
-}
 
-pub fn AddAssign(vm: &mut Machine) -> bool {
-    let payload = Payload::GetTwoRegisters(vm);
-    _Add(vm, (payload.0, payload.0, payload.1))
-}
-
-#[inline]
-fn _Add(vm: &mut Machine, payload: ThreeRegisters) -> bool {
     let a = u32::from_be_bytes(vm.registry.Get(payload.1));
     let b = u32::from_be_bytes(vm.registry.Get(payload.2));
 
@@ -78,16 +74,7 @@ fn _Add(vm: &mut Machine, payload: ThreeRegisters) -> bool {
 
 pub fn Subtract(vm: &mut Machine) -> bool {
     let payload = Payload::GetThreeRegisters(vm);
-    _Subtract(vm, payload)
-}
 
-pub fn SubtractAssign(vm: &mut Machine) -> bool {
-    let payload = Payload::GetTwoRegisters(vm);
-    _Subtract(vm, (payload.0, payload.0, payload.1))
-}
-
-#[inline]
-fn _Subtract(vm: &mut Machine, payload: ThreeRegisters) -> bool {
     let a = u32::from_be_bytes(vm.registry.Get(payload.1));
     let b = u32::from_be_bytes(vm.registry.Get(payload.2));
 
@@ -99,16 +86,7 @@ fn _Subtract(vm: &mut Machine, payload: ThreeRegisters) -> bool {
 
 pub fn Multiply(vm: &mut Machine) -> bool {
     let payload = Payload::GetThreeRegisters(vm);
-    _Multiply(vm, payload)
-}
 
-pub fn MultiplyAssign(vm: &mut Machine) -> bool {
-    let payload = Payload::GetTwoRegisters(vm);
-    _Multiply(vm, (payload.0, payload.0, payload.1))
-}
-
-#[inline]
-fn _Multiply(vm: &mut Machine, payload: ThreeRegisters) -> bool {
     let a = u32::from_be_bytes(vm.registry.Get(payload.1));
     let b = u32::from_be_bytes(vm.registry.Get(payload.2));
 
@@ -120,16 +98,7 @@ fn _Multiply(vm: &mut Machine, payload: ThreeRegisters) -> bool {
 
 pub fn Divide(vm: &mut Machine) -> bool {
     let payload = Payload::GetThreeRegisters(vm);
-    _Divide(vm, payload)
-}
 
-pub fn DivideAssign(vm: &mut Machine) -> bool {
-    let payload = Payload::GetTwoRegisters(vm);
-    _Divide(vm, (payload.0, payload.0, payload.1))
-}
-
-#[inline]
-fn _Divide(vm: &mut Machine, payload: ThreeRegisters) -> bool {
     let a = u32::from_be_bytes(vm.registry.Get(payload.1));
     let b = u32::from_be_bytes(vm.registry.Get(payload.2));
 
@@ -141,16 +110,7 @@ fn _Divide(vm: &mut Machine, payload: ThreeRegisters) -> bool {
 
 pub fn Remainder(vm: &mut Machine) -> bool {
     let payload = Payload::GetThreeRegisters(vm);
-    _Remainder(vm, payload)
-}
 
-pub fn RemainderAssign(vm: &mut Machine) -> bool {
-    let payload = Payload::GetTwoRegisters(vm);
-    _Remainder(vm, (payload.0, payload.0, payload.1))
-}
-
-#[inline]
-fn _Remainder(vm: &mut Machine, payload: ThreeRegisters) -> bool {
     let a = u32::from_be_bytes(vm.registry.Get(payload.1));
     let b = u32::from_be_bytes(vm.registry.Get(payload.2));
 
@@ -160,23 +120,9 @@ fn _Remainder(vm: &mut Machine, payload: ThreeRegisters) -> bool {
     true
 }
 
-#[allow(dead_code)]
-pub fn Neg(_vm: &mut Machine) -> bool {
-    false
-}
-
 pub fn And(vm: &mut Machine) -> bool {
     let payload = Payload::GetThreeRegisters(vm);
-    _And(vm, payload)
-}
 
-pub fn AndAssign(vm: &mut Machine) -> bool {
-    let payload = Payload::GetTwoRegisters(vm);
-    _And(vm, (payload.0, payload.0, payload.1))
-}
-
-#[inline]
-fn _And(vm: &mut Machine, payload: ThreeRegisters) -> bool {
     let a = u32::from_be_bytes(vm.registry.Get(payload.1));
     let b = u32::from_be_bytes(vm.registry.Get(payload.2));
 
@@ -188,16 +134,7 @@ fn _And(vm: &mut Machine, payload: ThreeRegisters) -> bool {
 
 pub fn Or(vm: &mut Machine) -> bool {
     let payload = Payload::GetThreeRegisters(vm);
-    _Or(vm, payload)
-}
 
-pub fn OrAssign(vm: &mut Machine) -> bool {
-    let payload = Payload::GetTwoRegisters(vm);
-    _Or(vm, (payload.0, payload.0, payload.1))
-}
-
-#[inline]
-fn _Or(vm: &mut Machine, payload: ThreeRegisters) -> bool {
     let a = u32::from_be_bytes(vm.registry.Get(payload.1));
     let b = u32::from_be_bytes(vm.registry.Get(payload.2));
 
@@ -209,16 +146,7 @@ fn _Or(vm: &mut Machine, payload: ThreeRegisters) -> bool {
 
 pub fn Xor(vm: &mut Machine) -> bool {
     let payload = Payload::GetThreeRegisters(vm);
-    _Xor(vm, payload)
-}
 
-pub fn XorAssign(vm: &mut Machine) -> bool {
-    let payload = Payload::GetTwoRegisters(vm);
-    _Xor(vm, (payload.0, payload.0, payload.1))
-}
-
-#[inline]
-fn _Xor(vm: &mut Machine, payload: ThreeRegisters) -> bool {
     let a = u32::from_be_bytes(vm.registry.Get(payload.1));
     let b = u32::from_be_bytes(vm.registry.Get(payload.2));
 
@@ -239,18 +167,45 @@ pub fn Not(vm: &mut Machine) -> bool {
     true
 }
 
+pub fn Nand(vm: &mut Machine) -> bool {
+    let payload = Payload::GetThreeRegisters(vm);
+
+    let a = u32::from_be_bytes(vm.registry.Get(payload.1));
+    let b = u32::from_be_bytes(vm.registry.Get(payload.2));
+
+    vm.registry.Set(payload.0, (!(a & b)).to_be_bytes());
+    vm.Walk(3);
+
+    true
+}
+
+pub fn Nor(vm: &mut Machine) -> bool {
+    let payload = Payload::GetThreeRegisters(vm);
+
+    let a = u32::from_be_bytes(vm.registry.Get(payload.1));
+    let b = u32::from_be_bytes(vm.registry.Get(payload.2));
+
+    vm.registry.Set(payload.0, (!(a | b)).to_be_bytes());
+    vm.Walk(3);
+
+    true
+}
+
+pub fn Xnor(vm: &mut Machine) -> bool {
+    let payload = Payload::GetThreeRegisters(vm);
+
+    let a = u32::from_be_bytes(vm.registry.Get(payload.1));
+    let b = u32::from_be_bytes(vm.registry.Get(payload.2));
+
+    vm.registry.Set(payload.0, (!(a ^ b)).to_be_bytes());
+    vm.Walk(3);
+
+    true
+}
+
 pub fn ShiftLeft(vm: &mut Machine) -> bool {
     let payload = Payload::GetTwoRegisters(vm);
-    _ShiftLeft(vm, payload)
-}
 
-pub fn ShiftLeftAssign(vm: &mut Machine) -> bool {
-    let payload = Payload::GetRegister(vm);
-    _ShiftLeft(vm, (payload, payload))
-}
-
-#[inline]
-fn _ShiftLeft(vm: &mut Machine, payload: TwoRegisters) -> bool {
     let a = u32::from_be_bytes(vm.registry.Get(payload.1));
 
     vm.registry.Set(payload.0, (a << 1).to_be_bytes());
@@ -261,16 +216,7 @@ fn _ShiftLeft(vm: &mut Machine, payload: TwoRegisters) -> bool {
 
 pub fn ShiftRight(vm: &mut Machine) -> bool {
     let payload = Payload::GetTwoRegisters(vm);
-    _ShiftRight(vm, payload)
-}
 
-pub fn ShiftRightAssign(vm: &mut Machine) -> bool {
-    let payload = Payload::GetRegister(vm);
-    _ShiftRight(vm, (payload, payload))
-}
-
-#[inline]
-fn _ShiftRight(vm: &mut Machine, payload: TwoRegisters) -> bool {
     let a = u32::from_be_bytes(vm.registry.Get(payload.1));
 
     vm.registry.Set(payload.0, (a >> 1).to_be_bytes());

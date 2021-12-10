@@ -7,10 +7,6 @@ pub mod Operations;
 pub mod Payload;
 pub mod Types;
 
-#[path = "Assembly.rs"]
-mod _Assembly;
-pub use self::_Assembly::*;
-
 #[path = "Frame.rs"]
 mod _Frame;
 pub use self::_Frame::*;
