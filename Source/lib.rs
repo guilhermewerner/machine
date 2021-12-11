@@ -3,9 +3,14 @@
 
 mod Instructions;
 
+pub mod Mnemonics;
 pub mod Operations;
 pub mod Payload;
 pub mod Types;
+
+#[path = "Assembly.rs"]
+mod _Assembly;
+pub use self::_Assembly::*;
 
 #[path = "Frame.rs"]
 mod _Frame;
@@ -30,3 +35,11 @@ pub use self::_Registry::*;
 #[path = "Stack.rs"]
 mod _Stack;
 pub use self::_Stack::*;
+
+#[path = "Instruction.rs"]
+mod _Instruction;
+pub use self::_Instruction::*;
+
+#[path = "InstructionTable.rs"]
+mod _InstructionTable;
+pub use self::_InstructionTable::*;

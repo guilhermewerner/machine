@@ -1,33 +1,150 @@
-use crate::Frame;
+use crate::Types::*;
+use std::mem;
 
 pub struct Stack {
-    frames: Vec<Frame>,
+    inner: Vec<Byte>,
     lenght: usize,
 }
 
 impl Stack {
     pub fn New(size: usize) -> Self {
         Self {
-            frames: Vec::with_capacity(size),
+            inner: Vec::with_capacity(size),
             lenght: size,
         }
     }
 
     pub fn IsEmpty(&self) -> bool {
-        self.frames.is_empty()
+        self.inner.is_empty()
     }
 
     pub fn Flush(&mut self) {
-        self.frames.clear();
+        self.inner.clear();
     }
 
-    pub fn Push(&mut self, frame: Frame) {
-        if self.frames.len() + frame.GetSize() < self.lenght {
-            self.frames.push(frame);
+    pub fn PushByte(&mut self, value: Byte) {
+        if self.inner.len() + 1 < self.lenght {
+            self.inner.push(value);
         }
     }
 
-    pub fn Pop(&mut self) -> Frame {
-        self.frames.pop().unwrap_or(Frame::Null())
+    pub fn PeekByte(&self) -> Byte {
+        *self.inner.last().unwrap()
+    }
+
+    pub fn PopByte(&mut self) -> Byte {
+        self.inner.pop().unwrap()
+    }
+
+    pub fn PushHalf(&mut self, value: Half) {
+        if self.inner.len() + 1 < self.lenght {
+            self.inner.extend(value);
+        }
+    }
+
+    pub fn PeekHalf(&self) -> Half {
+        const BYTES: usize = mem::size_of::<Half>();
+        let mut buffer = [0; BYTES];
+
+        for i in 0..BYTES {
+            buffer[i] = *self.inner.last().unwrap_or(&0);
+        }
+
+        buffer
+    }
+
+    pub fn PopHalf(&mut self) -> Half {
+        const BYTES: usize = mem::size_of::<Half>();
+        let mut buffer = [0; BYTES];
+
+        for i in 0..BYTES {
+            buffer[i] = self.inner.pop().unwrap_or(0);
+        }
+
+        buffer
+    }
+
+    pub fn PushWord(&mut self, value: Word) {
+        if self.inner.len() + 1 < self.lenght {
+            self.inner.extend(value);
+        }
+    }
+
+    pub fn PeekWord(&self) -> Word {
+        const BYTES: usize = mem::size_of::<Word>();
+        let mut buffer = [0; BYTES];
+
+        for i in 0..BYTES {
+            buffer[i] = *self.inner.last().unwrap_or(&0);
+        }
+
+        buffer
+    }
+
+    pub fn PopWord(&mut self) -> Word {
+        const BYTES: usize = mem::size_of::<Word>();
+        let mut buffer = [0; BYTES];
+
+        for i in 0..BYTES {
+            buffer[i] = self.inner.pop().unwrap_or(0);
+        }
+
+        buffer
+    }
+
+    pub fn PushDWord(&mut self, value: DWord) {
+        if self.inner.len() + 1 < self.lenght {
+            self.inner.extend(value);
+        }
+    }
+
+    pub fn PeekDWord(&self) -> DWord {
+        const BYTES: usize = mem::size_of::<DWord>();
+        let mut buffer = [0; BYTES];
+
+        for i in 0..BYTES {
+            buffer[i] = *self.inner.last().unwrap_or(&0);
+        }
+
+        buffer
+    }
+
+    pub fn PopDWord(&mut self) -> DWord {
+        const BYTES: usize = mem::size_of::<DWord>();
+        let mut buffer = [0; BYTES];
+
+        for i in 0..BYTES {
+            buffer[i] = self.inner.pop().unwrap_or(0);
+        }
+
+        buffer
+    }
+
+    pub fn PushQWord(&mut self, value: QWord) {
+        if self.inner.len() + 1 < self.lenght {
+            self.inner.extend(value);
+        }
+    }
+
+    pub fn PeekQWord(&self) -> QWord {
+        const BYTES: usize = mem::size_of::<QWord>();
+        let mut buffer = [0; BYTES];
+
+        for i in 0..BYTES {
+            buffer[i] = *self.inner.last().unwrap_or(&0);
+        }
+
+        buffer
+    }
+
+    pub fn PopQWord(&mut self) -> QWord {
+        const BYTES: usize = mem::size_of::<QWord>();
+        let mut buffer = [0; BYTES];
+
+        for i in 0..BYTES {
+            buffer[i] = self.inner.pop().unwrap_or(0);
+        }
+
+        buffer
     }
 }
