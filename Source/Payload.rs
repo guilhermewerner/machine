@@ -8,16 +8,6 @@ pub type TwoRegisters = (Byte, Byte);
 pub type ThreeRegisters = (Byte, Byte, Byte);
 pub type FourRegisters = (Byte, Byte, Byte, Byte);
 
-pub enum PayloadType {
-    Nothing,
-    Register,
-    RegisterAddress,
-    AddressRegister,
-    TwoRegisters,
-    ThreeRegisters,
-    FourRegisters,
-}
-
 #[inline]
 pub fn GetRegister(vm: &mut Machine) -> Register {
     vm.ReadByte(None)

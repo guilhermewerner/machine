@@ -1,8 +1,7 @@
-use crate::Instruction;
 use crate::Instructions::*;
 use crate::Operations::*;
-use crate::Payload::PayloadType;
 use crate::Types::Byte;
+use crate::{Instruction, PayloadType};
 use std::collections::HashMap;
 
 pub struct InstructionTable {
@@ -19,6 +18,7 @@ impl Default for InstructionTable {
 
 impl InstructionTable {
     #[inline]
+    #[rustfmt::skip]
     pub fn New() -> Self {
         let mut table = InstructionTable::default();
 

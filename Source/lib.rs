@@ -23,6 +23,10 @@ pub use self::_Limits::*;
 mod _Machine;
 pub use self::_Machine::*;
 
+#[path = "PayloadType.rs"]
+mod _PayloadType;
+pub use self::_PayloadType::*;
+
 #[path = "Registry.rs"]
 mod _Registry;
 pub use self::_Registry::*;
