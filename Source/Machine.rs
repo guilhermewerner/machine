@@ -1,7 +1,6 @@
 use crate::Instructions::*;
 use crate::Operations::*;
-use crate::Types::*;
-use crate::{Heap, Registry, Stack, HEAP_LIMIT, STACK_SIZE};
+use crate::{Byte, Half, Heap, Registry, Stack, Word, HEAP_LIMIT, STACK_SIZE};
 
 #[allow(dead_code)]
 pub struct Machine {

@@ -1,4 +1,4 @@
-use crate::Types::*;
+use crate::{Byte, DWord, QWord, Half,Word};
 use std::mem;
 
 pub struct Stack {

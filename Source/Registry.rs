@@ -1,4 +1,4 @@
-use crate::Types::*;
+use crate::Word;
 use crate::REGISTER_COUNT;
 
 #[derive(Default)]

@@ -26,3 +26,6 @@ pub use self::_Registry::*;
 mod _Stack;
 pub use self::_Stack::*;
 
+#[path = "Types.rs"]
+mod _Types;
+pub use self::_Types::*;
