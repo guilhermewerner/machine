@@ -5,11 +5,6 @@ mod Instructions;
 
 pub mod Operations;
 pub mod Payload;
-pub mod Types;
-
-#[path = "Assembly.rs"]
-mod _Assembly;
-pub use self::_Assembly::*;
 
 #[path = "Heap.rs"]
 mod _Heap;
@@ -23,10 +18,6 @@ pub use self::_Limits::*;
 mod _Machine;
 pub use self::_Machine::*;
 
-#[path = "PayloadType.rs"]
-mod _PayloadType;
-pub use self::_PayloadType::*;
-
 #[path = "Registry.rs"]
 mod _Registry;
 pub use self::_Registry::*;
@@ -35,10 +26,3 @@ pub use self::_Registry::*;
 mod _Stack;
 pub use self::_Stack::*;
 
-#[path = "Instruction.rs"]
-mod _Instruction;
-pub use self::_Instruction::*;
-
-#[path = "InstructionTable.rs"]
-mod _InstructionTable;
-pub use self::_InstructionTable::*;
