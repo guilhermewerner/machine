@@ -1,5 +1,5 @@
 use crate::Machine;
-use crate::Types::{Byte, Word};
+use crate::{Byte, Word};
 
 pub type Register = Byte;
 pub type RegisterAddress = (Byte, Word);

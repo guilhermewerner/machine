@@ -1,4 +1,4 @@
-use crate::Types::*;
+use crate::{Byte, DWord, Half, QWord, Word};
 use std::mem;
 
 pub struct Heap {
