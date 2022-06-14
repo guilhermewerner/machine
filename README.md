@@ -1,3 +1,3 @@
 # Machine
 
-Virtual Machine.
+Simple virtual machine.
